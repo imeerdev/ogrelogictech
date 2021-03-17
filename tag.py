@@ -1,13 +1,15 @@
 import pandas as pd
 
-# read all prudcts data
+# read all prudcts data (import csv file)
 df_orignal = pd.read_csv('prods.csv')
 
 df = df_orignal.copy()
-# fill NaN values
+
+# fill NaN values with blank
 df = df.fillna("")
 
-# combine and clean columns for types selection
+
+# combine and clean columns for types selection 
 df['combined_GB'] = df['Ingredients'] +" "+df['product_title']
 df['combined_GB'] = df['combined_GB'].str.lower().str.replace('n/a', '').str.replace('<p>', '').str.replace('[^a-zA-Z0-9 ]', '')
 
@@ -26,11 +28,16 @@ df_types = pd.read_csv('types.csv')
 # fill NaN values
 df_types = df_types.fillna("")
 
+
+# data cleaning (replace all capital letters with lower case and replace all symbols multiple blanks with a single blank.
+
 df_types['B'] = df_types['B'].str.replace('\n', ',').str.lower().str.replace('[^a-zA-Z0-9,\- ]', '')
 df_types['C'] = df_types['C'].str.replace('\n', ',').str.lower().str.replace('[^a-zA-Z0-9,\- ]', '')
 df_types['D'] = df_types['D'].str.replace('\n', ',').str.lower().str.replace('[^a-zA-Z0-9,\- ]', '')
 df_types['E'] = df_types['E'].str.replace('\n', ',').str.lower().str.replace('[^a-zA-Z0-9,\- ]', '')
 
+
+# set up four conditions to check if the string was included, then append the tag to the product
 
 condition_one = {}
 for _, row_i in df.iterrows():
@@ -91,11 +98,12 @@ df_orignal['CHARACTERISTICS/DESCRIPTION/TYPE OF PRODUCT'] = condition_two.values
 df_orignal['UNTAG IF PRESENT IN INGREDIENTS'] = condition_four.values()
 
 
+# merge all the tags to the column - final tag
 final_tags = []
 for i in range(1, 1+len(condition_one)):
     final_tags.append(", ".join(sorted(list(set.union(set(condition_one[i].keys()),set(condition_two[i].keys()),set(condition_three[i].keys())).difference(set(condition_four[i].keys()))))))
 df_orignal['FINAL_TAGS'] = final_tags
 
 
-# print(union_tags)
+# print(union_tags) the csv file with final tags column
 df_orignal.to_csv('updated_tags.csv', index=False)
